@@ -1,1 +1,1 @@
-# djangocongreessjp2022
+# djangocongressjp2022
