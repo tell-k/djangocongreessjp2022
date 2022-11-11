@@ -1,0 +1,107 @@
+Djangoのアプリはどういう単位で作るべきか？
+
+- 概要・目的
+- 今日話さないこと
+ - Django プロジェクト全体のレイアウト
+ - Settings分ける話とか
+ - Modelの設計の話とか
+ - Formの便利の使い方
+ - テンプレートの話とか
+- 対象とする規模
+ - 今日話すプラクティスは全てのプロジェクト向けというわけではない(確証がない)
+ - 発表者の経験から以下のような特性があると適用しやすい
+ - 同時に開発する人間が数人(2〜10) 程度
+ - 数ヶ月〜数年くらいのスパンで保守しながら、開発するプロジェクト
+
+- 最初にこまった話
+ - それまでのMVCフレームワーク
+   - Mojavi
+   - Ethna
+   - Maple
+   - CakePHP
+   - Symfony
+   - Zend_Framwork
+ - ファイル種別ごとにまとめるレイアウト
+ - アプリ is 何?
+
+- Djangoのアプリとは？
+ - 定義の確認
+
+- アプリ分ける方針はある？
+ - アンケート結果の紹介
+ - ほとんどの人は方針はない。
+ - なくても作れるしあまりこまってないのかも？
+
+- OSSを調べる
+ - https://djangoproject.jp/whouses/
+ - https://github.com/django-oscar/django-oscar
+ - https://github.com/wagtail/wagtail/tree/main/wagtail
+ - https://github.com/getsentry/sentry/blob/7148a26a5e4423c7bc4392e7c4cf0d131d5b5c05/src/sentry/conf/server.py
+
+- 文献を調べる
+ - Django Skelton
+ - TwoScope Django 4.3 When in Doubt, Keep Apps Small
+ - Reusable Appps  DjangoCon
+ - Reusable Appps  Django公式
+
+- 重要なポイント
+
+- 疎結合
+ - Django の重要な設計思想
+ - 拡張に開き、修正対して閉じている
+
+- SOLIDの原則
+
+- ベタープラクティクス
+ - 機能単位でアプリを作る
+ - 疎結合なるように意識する
+ - 相互依存しない、依存関係をシンプルにする
+ - Pyhonコードとして循環参照させない
+ - アプリ構造とURL構造を一致させない
+
+アンケート項目
+
+- 開発チームの規模
+- 開発チームでのあなたの役割はなんですか
+- アプリを新規にアプリを作るか、既存のアプリの中に作るか悩んだことはありますか？
+- アプリを作る/分ける方針がチームにありますか？
+- どのような方針ですか、簡単に教えてください
+- アプリを作るにあたって参考にしているURLやドキュメントを教えてください
+
+
+確認・参考書籍
+
+
+- https://docs.djangoproject.com/ja/4.1/intro/reusable-apps/
+- https://django-best-practice-ja.readthedocs.io/ja/latest/deployment/bootstrap.html
+- https://webcache.googleusercontent.com/search?q=cache:rhIpalvIOCcJ:https://groups.google.com/g/django-ja/c/Lmk_z7vvpqs&cd=1&hl=ja&ct=clnk&gl=jp
+- https://akirachiku.com/post/2014-04-01-road-to-django-best-practice/
+- https://man.plustar.jp/django/misc/design-philosophies.html
+- https://shuji-w6e.hatenadiary.org/entry/20080731/1217477232
+- https://teratail.com/questions/217875
+- https://seddonym.me/2018/05/04/django-signals/#project-dependency-flow
+- https://slides.com/davidseddon/deck/#/
+- https://docs.djangoproject.com/ja/2.2/intro/reusable-apps/
+- https://thara.dev/posts/rethink-django-project-structure/
+- https://hiroronn.hatenablog.jp/entry/20181216/1544950291
+- https://www.dabapps.com/blog/django-models-and-encapsulation/
+- https://github.com/wsvincent/awesome-django#open-source-projects
+- https://docs.google.com/presentation/d/1yapK1hYt8f64ztLCc7yFpCI4RG1vTMLhqwZ6cUBZIvI/edit#slide=id.g1db50041e3_0_145
+
+Django docs says "Reusability is the way of life in Python. You only need to write the parts that make your project unique".
+
+https://en.wikipedia.org/wiki/Unix_philosophy
+Check if your app follows Unix philosophy:
+"Do one thing, and do it well".
+
+4.3 When in Doubt, Keep Apps Small
+Don’t worry too hard about getting app design perfect. It’s an art,
+
+This is where a project puts all code into a single app. While common for small Django
+projects, larger projects typically don’t follow this pattern.
+There are positives to this approach. Specifically, migrations are easier and table names follow
+a simplified pattern.
+It has to be said that other frameworks such as Rails embrace this technique and are quite
+successful. However, while Rails and other tools are designed to follow this pattern, Django
+isn’t optimized for this design. Using this technique with Django requires experience and
+expertise with patterns rarely described in documentation on Django.

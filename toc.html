@@ -1,0 +1,192 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>&lt;no title&gt;</title>
+    <meta name="description" content="DjangoCongress JP 2022 の発表資料です。" >
+    <link rel="canonical" href="https://tell-k.github.io/djangocongressjp2022" >
+    <script>
+      var notesEnabled =false;
+      var sections = [];
+      var titleNotes = [];
+    </script>
+    <meta charset='utf-8'>
+
+    <meta property="og:title" content="&lt;no title&gt;">
+    <meta property="og:description" content="DjangoCongress JP 2022 の発表資料です。">
+    <meta property="og:image" content="https://tell-k.github.io/djangocongressjp2022/_static/img/ogp.png">
+    <meta property="og:url" content="https://tell-k.github.io/djangocongressjp2022">
+    <meta property="og:site_name" content="github">
+    <meta property="og:type" content="article">
+    <meta property="article:author" content="https://github.com/tell-k">
+
+    <meta name="twitter:title" content="&lt;no title&gt;">
+    <meta name="twitter:description" content="DjangoCongress JP 2022 の発表資料です。">
+    <meta name="twitter:image" content="https://tell-k.github.io/djangocongressjp2022/_static/img/ogp.png">
+    <meta name="twitter:card" content="summary_large_image"">
+    <meta name="twitter:site" content="@github">
+    <meta name="twitter:creator" content="@tell_k">
+
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/translations.js"></script>
+  </head>
+  <body style='display: none'>
+    
+  <p>Djangoのアプリはどういう単位で作るべきか？</p>
+<ul class="simple">
+<li>概要・目的</li>
+<li>今日話さないこと</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>Django プロジェクト全体のレイアウト</li>
+<li>Settings分ける話とか</li>
+<li>Modelの設計の話とか</li>
+<li>Formの便利の使い方</li>
+<li>テンプレートの話とか</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li>対象とする規模</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>今日話すプラクティスは全てのプロジェクト向けというわけではない(確証がない)</li>
+<li>発表者の経験から以下のような特性があると適用しやすい</li>
+<li>同時に開発する人間が数人(2〜10) 程度</li>
+<li>数ヶ月〜数年くらいのスパンで保守しながら、開発するプロジェクト</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li>最初にこまった話</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>それまでのMVCフレームワーク
+- Mojavi
+- Ethna
+- Maple
+- CakePHP
+- Symfony
+- Zend_Framwork</li>
+<li>ファイル種別ごとにまとめるレイアウト</li>
+<li>アプリ is 何?</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li>Djangoのアプリとは？</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>定義の確認</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li>アプリ分ける方針はある？</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>アンケート結果の紹介</li>
+<li>ほとんどの人は方針はない。</li>
+<li>なくても作れるしあまりこまってないのかも？</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li>OSSを調べる</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="https://djangoproject.jp/whouses/">https://djangoproject.jp/whouses/</a></li>
+<li><a class="reference external" href="https://github.com/django-oscar/django-oscar">https://github.com/django-oscar/django-oscar</a></li>
+<li><a class="reference external" href="https://github.com/wagtail/wagtail/tree/main/wagtail">https://github.com/wagtail/wagtail/tree/main/wagtail</a></li>
+<li><a class="reference external" href="https://github.com/getsentry/sentry/blob/7148a26a5e4423c7bc4392e7c4cf0d131d5b5c05/src/sentry/conf/server.py">https://github.com/getsentry/sentry/blob/7148a26a5e4423c7bc4392e7c4cf0d131d5b5c05/src/sentry/conf/server.py</a></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li>文献を調べる</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>Django Skelton</li>
+<li>TwoScope Django 4.3 When in Doubt, Keep Apps Small</li>
+<li>Reusable Appps  DjangoCon</li>
+<li>Reusable Appps  Django公式</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li>重要なポイント</li>
+<li>疎結合</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>Django の重要な設計思想</li>
+<li>拡張に開き、修正対して閉じている</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li>SOLIDの原則</li>
+<li>ベタープラクティクス</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>機能単位でアプリを作る</li>
+<li>疎結合なるように意識する</li>
+<li>相互依存しない、依存関係をシンプルにする</li>
+<li>Pyhonコードとして循環参照させない</li>
+<li>アプリ構造とURL構造を一致させない</li>
+</ul>
+</div></blockquote>
+<p>アンケート項目</p>
+<ul class="simple">
+<li>開発チームの規模</li>
+<li>開発チームでのあなたの役割はなんですか</li>
+<li>アプリを新規にアプリを作るか、既存のアプリの中に作るか悩んだことはありますか？</li>
+<li>アプリを作る/分ける方針がチームにありますか？</li>
+<li>どのような方針ですか、簡単に教えてください</li>
+<li>アプリを作るにあたって参考にしているURLやドキュメントを教えてください</li>
+</ul>
+<p>確認・参考書籍</p>
+<ul class="simple">
+<li><a class="reference external" href="https://docs.djangoproject.com/ja/4.1/intro/reusable-apps/">https://docs.djangoproject.com/ja/4.1/intro/reusable-apps/</a></li>
+<li><a class="reference external" href="https://django-best-practice-ja.readthedocs.io/ja/latest/deployment/bootstrap.html">https://django-best-practice-ja.readthedocs.io/ja/latest/deployment/bootstrap.html</a></li>
+<li><a class="reference external" href="https://webcache.googleusercontent.com/search?q=cache:rhIpalvIOCcJ:https://groups.google.com/g/django-ja/c/Lmk_z7vvpqs&amp;cd=1&amp;hl=ja&amp;ct=clnk&amp;gl=jp">https://webcache.googleusercontent.com/search?q=cache:rhIpalvIOCcJ:https://groups.google.com/g/django-ja/c/Lmk_z7vvpqs&amp;cd=1&amp;hl=ja&amp;ct=clnk&amp;gl=jp</a></li>
+<li><a class="reference external" href="https://akirachiku.com/post/2014-04-01-road-to-django-best-practice/">https://akirachiku.com/post/2014-04-01-road-to-django-best-practice/</a></li>
+<li><a class="reference external" href="https://man.plustar.jp/django/misc/design-philosophies.html">https://man.plustar.jp/django/misc/design-philosophies.html</a></li>
+<li><a class="reference external" href="https://shuji-w6e.hatenadiary.org/entry/20080731/1217477232">https://shuji-w6e.hatenadiary.org/entry/20080731/1217477232</a></li>
+<li><a class="reference external" href="https://teratail.com/questions/217875">https://teratail.com/questions/217875</a></li>
+<li><a class="reference external" href="https://seddonym.me/2018/05/04/django-signals/#project-dependency-flow">https://seddonym.me/2018/05/04/django-signals/#project-dependency-flow</a></li>
+<li><a class="reference external" href="https://slides.com/davidseddon/deck/#/">https://slides.com/davidseddon/deck/#/</a></li>
+<li><a class="reference external" href="https://docs.djangoproject.com/ja/2.2/intro/reusable-apps/">https://docs.djangoproject.com/ja/2.2/intro/reusable-apps/</a></li>
+<li><a class="reference external" href="https://thara.dev/posts/rethink-django-project-structure/">https://thara.dev/posts/rethink-django-project-structure/</a></li>
+<li><a class="reference external" href="https://hiroronn.hatenablog.jp/entry/20181216/1544950291">https://hiroronn.hatenablog.jp/entry/20181216/1544950291</a></li>
+<li><a class="reference external" href="https://www.dabapps.com/blog/django-models-and-encapsulation/">https://www.dabapps.com/blog/django-models-and-encapsulation/</a></li>
+<li><a class="reference external" href="https://github.com/wsvincent/awesome-django#open-source-projects">https://github.com/wsvincent/awesome-django#open-source-projects</a></li>
+<li><a class="reference external" href="https://docs.google.com/presentation/d/1yapK1hYt8f64ztLCc7yFpCI4RG1vTMLhqwZ6cUBZIvI/edit#slide=id.g1db50041e3_0_145">https://docs.google.com/presentation/d/1yapK1hYt8f64ztLCc7yFpCI4RG1vTMLhqwZ6cUBZIvI/edit#slide=id.g1db50041e3_0_145</a></li>
+</ul>
+<p>Django docs says &quot;Reusability is the way of life in Python. You only need to write the parts that make your project unique&quot;.</p>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Unix_philosophy">https://en.wikipedia.org/wiki/Unix_philosophy</a>
+Check if your app follows Unix philosophy:
+&quot;Do one thing, and do it well&quot;.</p>
+<p>4.3 When in Doubt, Keep Apps Small
+Don’t worry too hard about getting app design perfect. It’s an art,</p>
+<p>This is where a project puts all code into a single app. While common for small Django
+projects, larger projects typically don’t follow this pattern.
+There are positives to this approach. Specifically, migrations are easier and table names follow
+a simplified pattern.
+It has to be said that other frameworks such as Rails embrace this technique and are quite
+successful. However, while Rails and other tools are designed to follow this pattern, Django
+isn’t optimized for this design. Using this technique with Django requires experience and
+expertise with patterns rarely described in documentation on Django.</p>
+
+
+  <div id="help">
+      Use the left and right arrow keys or click the left and right
+      edges of the page to navigate between slides.<br>
+      (Press 'H' or navigate to hide this message.)
+  </div>
+  </body>
+  <script type="text/javascript" src="_static/js/initialize.js"></script>
+  <script type="text/javascript" src="_static/js/slides.js"></script>
+</html>

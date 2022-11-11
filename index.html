@@ -1,0 +1,701 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Djangoのアプリはどういう単位で作るべきか？</title>
+    <meta name="description" content="DjangoCongress JP 2022 の発表資料です。" >
+    <link rel="canonical" href="https://tell-k.github.io/djangocongressjp2022" >
+    <script>
+      var notesEnabled =false;
+      var sections = [];
+      var titleNotes = [];
+    </script>
+    <meta charset='utf-8'>
+
+    <meta property="og:title" content="Djangoのアプリはどういう単位で作るべきか？">
+    <meta property="og:description" content="DjangoCongress JP 2022 の発表資料です。">
+    <meta property="og:image" content="https://tell-k.github.io/djangocongressjp2022/_static/img/ogp.png">
+    <meta property="og:url" content="https://tell-k.github.io/djangocongressjp2022">
+    <meta property="og:site_name" content="github">
+    <meta property="og:type" content="article">
+    <meta property="article:author" content="https://github.com/tell-k">
+
+    <meta name="twitter:title" content="Djangoのアプリはどういう単位で作るべきか？">
+    <meta name="twitter:description" content="DjangoCongress JP 2022 の発表資料です。">
+    <meta name="twitter:image" content="https://tell-k.github.io/djangocongressjp2022/_static/img/ogp.png">
+    <meta name="twitter:card" content="summary_large_image"">
+    <meta name="twitter:site" content="@github">
+    <meta name="twitter:creator" content="@tell_k">
+
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/translations.js"></script>
+  </head>
+  <body style='display: none'>
+    
+  <div class="slide-green section" id="django">
+<h1>Djangoのアプリはどういう単位で作るべきか？<a class="headerlink" href="#django" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<div class="line-block">
+<div class="line">tell-k</div>
+<div class="line">DjangoCongress JP 2022 (2022.11.12)</div>
+</div>
+<div class="section" id="id1">
+<h2>おまえ誰よ？<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<img alt="_images/tell-k_300x300.png" src="_images/tell-k_300x300.png" />
+<ul class="simple">
+<li>tell-k</li>
+<li>BeProud.inc</li>
+<li>情弱プログラマー</li>
+<li><a class="reference external" href="https://twitter.com/tell_k">https://twitter.com/tell_k</a></li>
+<li><strong>https://tell-k.github.io/djangocongressjp2022/</strong></li>
+</ul>
+</div>
+<div class="section" id="beproud">
+<h2>BeProudの紹介<a class="headerlink" href="#beproud" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>BeProud - Pythonメインの受託開発、研修</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>私は主にTRACERYを開発しています</li>
+</ul>
+</div></blockquote>
+<img alt="_images/beproud.png" src="_images/beproud.png" />
+<p>個人でお手伝い</p>
+<ul class="simple">
+<li>Content Analytics - ユーザー体験分析ツール</li>
+</ul>
+</div>
+<div class="section" id="id2">
+<h2>目的/動機<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>Djangoの入門した時にアプリという概念に戸惑った</li>
+<li>何年もDjangoで開発して失敗しつつも、プラクティス的なものが溜まってきました</li>
+<li>ただ、チームとかでは共有したりしたけど、まとめたりはしてなかった</li>
+<li>世の中のプラクティスを調べながら、プラクティスをまとめたかったという欲求がありました。</li>
+</ul>
+</div>
+<div class="section" id="id3">
+<h2>対象<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>他の言語のMVCフレームワークを触って、これから Django を始める人</li>
+<li>Django 完全に理解した人<ul>
+<li><a class="reference external" href="https://togetter.com/li/1268851">エンジニアの言う「完全に理解した」「なにもわからない」「チョットデキル」って本当はこういう意味？</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="id5">
+<h2>今日話さないこと<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>Djangoプロジェクト全体のレイアウトの話</li>
+<li>Djangoの便利なライブラリの紹介＆使い方</li>
+<li>アプリの中をどう実装するか<ul>
+<li>ビジネスロジックはどこに書くか</li>
+<li>アプリ共通のモジュール名はどうするか</li>
+</ul>
+</li>
+</ul>
+<p>基本的に <strong>Djangoアプリどう作るか、分けるか</strong> という話だけをします</p>
+</div>
+<div class="section" id="id6">
+<h2>対象とするプロジェクトの規模<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>プロジェクトの規模によって適用できる話と適用できない話がありそう</li>
+<li>人数も少なく、機能もすくないアプリであれば過剰になるケース</li>
+<li>逆に、規模が大きければ不十分であるケース</li>
+</ul>
+<p>体感的に適用できそうな規模は以下のようなイメージです</p>
+<ul class="simple">
+<li>同時に開発する人数が2〜10人くらい</li>
+<li>数ヶ月〜数年間、保守をしながら継続的に機能追加・改修がある</li>
+</ul>
+</div>
+<div class="section" id="q1">
+<h2>Q1. 開発チームの規模(人数)はどれくらいですか？<a class="headerlink" href="#q1" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>事前にアンケートを取りました。20人くらい回答がありました。ありがとうございます。</li>
+<li>5人以下で開発してるチームが <strong>90%</strong> でした</li>
+</ul>
+<img alt="_images/graph_Q1.png" src="_images/graph_Q1.png" />
+</div>
+<div class="section" id="q2">
+<h2>Q2. 開発チームのあなたの役割は？<a class="headerlink" href="#q2" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>プロジェクトリーダー <strong>35%</strong></li>
+<li>開発メンバー <strong>50%</strong></li>
+</ul>
+<p>他は</p>
+<ul class="simple">
+<li>アドバイザー</li>
+<li>PL、スクラムマスター、開発</li>
+<li>個人で開発</li>
+<li>Full-stack Developer</li>
+</ul>
+</div>
+<div class="section" id="id7">
+<h2>Djangoで最初に困った話<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>それまでの私の仕事上の経験はPHPやPerlがメインでした</li>
+<li>当時はMVCフレームワークが乱立<ul>
+<li>Mojavi</li>
+<li>Ethna</li>
+<li>Maple</li>
+<li>CakePHP</li>
+<li>Symfony</li>
+<li>Zend_Framework</li>
+<li>Sledge</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="id8">
+<h2>だいたいこんな感じのレイアウト<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li><strong>ファイルの種別や役割ごとに</strong> コードがまとまっている</li>
+</ul>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>project
+  ├── controllers
+  │   ├── FugaContorller
+  │   └── HogeContorller
+  ├── models
+  │   ├── Hoge
+  │   └── User
+  └── views
+      ├── hoge_detail.html
+      └── hoge_list.html
+</pre></div>
+</div>
+</div>
+<div class="section" id="id9">
+<h2>Django触り始めた時<a class="headerlink" href="#id9" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>pollsアプリ？ 新しい機能作る時どうすればいいの？</li>
+<li>INSTALLED_APPS? 単なるPythonパッケージではないってこと？？？</li>
+<li>この実装は既存のアプリに書くのか、新しいアプリにするのか？？？</li>
+<li><strong>わからない。。。</strong></li>
+</ul>
+<img alt="_images/illust_komari.png" src="_images/illust_komari.png" />
+</div>
+<div class="section" id="id10">
+<h2>Djangoのアプリとは？<a class="headerlink" href="#id10" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<blockquote>
+<div><p>Django アプリケーション は単なる Python パッケージで、
+Django プロジェクトで使うことのみを意図したものです。
+アプリは一般的な Django の慣例に則っているでしょう。
+例えば models, tests, urls, views のサブモジュールがあることなどです。</p>
+<p>via <a class="reference external" href="https://docs.djangoproject.com/ja/4.1/intro/reusable-apps/">https://docs.djangoproject.com/ja/4.1/intro/reusable-apps/</a></p>
+</div></blockquote>
+</div>
+<div class="section" id="id11">
+<h2>Djangoのアプリとは？<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<blockquote>
+<div><p>Django apps are small libraries designed to represent a single aspect of a project. A Django project is made up of many Django apps.
+Some of those apps are internal to the project and will never be reused; others are third-party Django packages.</p>
+<p>Djangoアプリは、プロジェクトの1つの側面を表現するために設計された小さなライブラリです。
+Djangoのプロジェクトは、多くの Djangoアプリで構成されています。
+それらのアプリの中には、<strong>プロジェクト内部のもので決して再利用されることのないもの</strong> もあれば、
+サードパーティの Django パッケージのものもあります。</p>
+<p>via 4 Fundamentals of Django App Design | Two Scoops of Django 3.x</p>
+</div></blockquote>
+</div>
+<div class="section" id="id12">
+<h2>Djangoのアプリとは？<a class="headerlink" href="#id12" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<a class="reference internal image-reference" href="_images/django-apps-image-two-scoops-django.png"><img alt="_images/django-apps-image-two-scoops-django.png" src="_images/django-apps-image-two-scoops-django.png" style="width: 70%;" /></a>
+<p>via 4 Fundamentals of Django App Design | Two Scoops of Django 3.x</p>
+</div>
+<div class="section" id="id13">
+<h2>Djangoのアプリとは？<a class="headerlink" href="#id13" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>アプリの概念はなんとく理解はできました。</li>
+<li>プロジェクトの1つの側面 = 機能 と置き換えても差し支えないように感じます。</li>
+</ul>
+</div>
+<div class="section" id="id14">
+<h2>ではDjangoのアプリを作る、分ける基準は?<a class="headerlink" href="#id14" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>この基準や方針を解説してる書籍/サイトはあまり多くありません。</li>
+<li>想像するに入門書に書くには、やや抽象的な話で、絶対的な正解もないので盛り込みにくいのかもしれません。</li>
+<li>ただ私のように他言語やMVCに触ったことがある人は、割と早めにぶつかる部分かと思います。</li>
+</ul>
+<hr class="docutils" />
+<blockquote>
+<div><p>It's not uncommon for new Django developers to become understandably confused by Django’s usage of the word “app”.</p>
+<p>新しいDjango開発者が、 &quot;app&quot;という単語の使い方に戸惑うことはよくあることです。</p>
+<p>via 4 Fundamentals of Django App Design | Two Scoops of Django 3.x</p>
+</div></blockquote>
+</div>
+<div class="section" id="q3">
+<h2>Q3. アプリを作る、分ける時の方針や、ガイドラインはチームにありますか？<a class="headerlink" href="#q3" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li><strong>90%</strong> がないと回答しています</li>
+<li>方針がない = そもそもアプリを分けない可能性もある</li>
+</ul>
+<img alt="_images/graph_Q3.png" src="_images/graph_Q3.png" />
+</div>
+<div class="section" id="id15">
+<h2>アプリは分けないとダメなのか？<a class="headerlink" href="#id15" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>一つの大きなアプリの中で全てを実装すれば良いのではないのか？</li>
+<li>Djangoアプリを分けずに、やってうまく行っているプロジェクトもある</li>
+<li>アプリを分けるか分ないかはユーザーに委ねられてるので <strong>一概に悪いとはいえない</strong></li>
+<li>ただアプリという概念を生かした開発はできなくなるので、Djangoの思想からは外れそう</li>
+</ul>
+</div>
+<div class="section" id="id16">
+<h2>一つの大きなアプリの問題点<a class="headerlink" href="#id16" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<blockquote>
+<div><p>While common for small Django projects, larger projects typically don’t follow this pattern.</p>
+<p>There are positives to this approach. Specifically, migrations are easier and table names follow a simplified pattern. It has to be said that other frameworks such as Rails embrace this technique and are quite successful.</p>
+<p>However, while Rails and other tools are designed to follow this pattern, Django isn't optimized for this design.</p>
+<p>via 4.5.2 The Large Single App Project | Two Scoops of Django 3.x</p>
+</div></blockquote>
+</div>
+<div class="section" id="id17">
+<h2>一つの大きなアプリの問題点<a class="headerlink" href="#id17" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<blockquote>
+<div><p>小さな Django プロジェクトではよくあることですが、大きなプロジェクトでは一般的にこのパターンに従いません。</p>
+<p>このアプローチには利点があります。具体的には、移行がより簡単になり、テーブル名は単純化されたパターンに従います。Rails のような他のフレームワークもこの手法を取り入れ、かなり成功していると言わざるを得ません。</p>
+<p>しかし、Rails や他のツールはこのパターンに従うように設計されていますが <strong>Django はこの設計のために最適化されていません</strong></p>
+<p>via 4.5.2 The Large Single App Project | Two Scoops of Django 3.x</p>
+</div></blockquote>
+</div>
+<div class="section" id="id18">
+<h2>Django的な思考<a class="headerlink" href="#id18" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>Djangoの開発者である James Bennett 氏 は 2008年の DjangoCon で以下のように表現しています。<ul>
+<li><a class="reference external" href="https://www.youtube.com/watch?v=A-S0tqpPga4">DjangoCon 2008: Reusable Apps</a></li>
+</ul>
+</li>
+<li>他のフレームワークはモノリス的な思考をする<ul>
+<li>サイト全体を &quot;アプリ&quot; と捉える</li>
+<li>再利用については後から考える</li>
+<li>&quot;メイン&quot; のアプリにフックするプラグインを開発する傾向がある</li>
+<li>もしくはミドルウェア的な仕組みを多用する</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="id19">
+<h2>Django的な思考<a class="headerlink" href="#id19" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>Django的には以下のような思考をする<ul>
+<li>アプリ == ちょっとした機能</li>
+<li>サイト == 幾つかのアプリの集まり</li>
+<li>新しいアプリを自由に派生させて作る傾向がある</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="id20">
+<h2>一つのアプリでやっている例<a class="headerlink" href="#id20" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/getsentry/sentry">https://github.com/getsentry/sentry</a><ul>
+<li>エラートラッキングのSentry</li>
+<li>sentryという巨大のアプリの中で様々なモデル、機能が存在する</li>
+</ul>
+</li>
+<li><a class="reference external" href="https://www.jamesbeith.co.uk/blog/how-to-structure-django-projects/">https://www.jamesbeith.co.uk/blog/how-to-structure-django-projects/</a><ul>
+<li>アプリは使わずに、独自にデータ層やドメイン層などにディレクトリを切って開発</li>
+<li>Two Scope Django で否定的に紹介されていた</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="id21">
+<h2>アプリをどう作るべきか<a class="headerlink" href="#id21" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>アプリを機能単位で作るといっても、どう作るべきなのかまだ曖昧なきがします</li>
+<li>機能といっても大小があり、ある機能の中に別の機能が包含されているケースもある</li>
+<li>James Bennett 氏 は <strong>UNIX哲学の言葉</strong> を引用して次のように説明しています</li>
+</ul>
+</div>
+<div class="section" id="do-one-thing-and-do-it-well">
+<h2>&quot;Do one thing, and do it well&quot;<a class="headerlink" href="#do-one-thing-and-do-it-well" title="このヘッドラインへのパーマリンク">¶</a></h2>
+</div>
+<div class="section" id="id22">
+<h2>&quot;ひとつのことをうまくやれ&quot;<a class="headerlink" href="#id22" title="このヘッドラインへのパーマリンク">¶</a></h2>
+</div>
+<div class="section" id="id23">
+<h2>一つのことにフォーカスしてアプリを作る<a class="headerlink" href="#id23" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>短い言葉で説明できる状態をアプリ(機能)として作る</li>
+<li>ある機能は一つのタスクにフォーカスしたものであるべき。</li>
+<li>短い言葉で説明できない時は、アプリを分けることを検討できると良い</li>
+</ul>
+</div>
+<div class="section" id="two-scoops-of-django-3-x">
+<h2>Two Scoops of Django 3.x の例<a class="headerlink" href="#two-scoops-of-django-3-x" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>&quot;Two Scoops&quot; というアイスクリームショップのサイトを作る時にどういう機能があるだろうか。<ul>
+<li>flavor アプリ ... アイスクリームのフレーバーを追跡し、ウェブサイトに掲載する</li>
+<li>blog アプリ ... お店の公ブログを管理</li>
+<li>event アプリ ... お店が開催するイベントの管理</li>
+<li>shop アプリ ... メールでアイスクリームを注文し販売できる</li>
+<li>tickets アプリ...  アイスクリーム食べ放題チケットを販売できる</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="id24">
+<h2>よくフォーカスできている例<a class="headerlink" href="#id24" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>ユーザーのストレージとそれらの認証を扱う</li>
+<li>コンテンツに &quot;del.icio.us&quot; 風にタグを付けられるようにし、タグによる問い合わせもできるようにする</li>
+</ul>
+<p>via <a class="reference external" href="https://www.youtube.com/watch?v=A-S0tqpPga4">DjangoCon 2008: Reusable Apps</a></p>
+</div>
+<div class="section" id="id26">
+<h2>フォーカスできていない例<a class="headerlink" href="#id26" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>ブログのエントリ、それを投稿するユーザ、その認証、タグ付けとカテゴリ分け、静的コンテンツのためのいくつかのフラットページの扱いそして...</li>
+</ul>
+<p>via <a class="reference external" href="https://www.youtube.com/watch?v=A-S0tqpPga4">DjangoCon 2008: Reusable Apps</a></p>
+</div>
+<div class="section" id="orthogonality">
+<h2>直交性(Orthogonality) があるか考える<a class="headerlink" href="#orthogonality" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>アプリを分けるかどうかを考えた時に、実装しようとしている機能が他のアプリと直交しているかどうか</li>
+<li>直行性とは <strong>何かを変えた時に他に影響を与えない</strong> ということです。</li>
+<li>例) ユーザー情報の更新フローの変更があっても、ユーザー登録の一連のフローには影響がないので、別のアプリにできそう。</li>
+</ul>
+</div>
+<div class="section" id="id28">
+<h2>とはいえなかなか難しい<a class="headerlink" href="#id28" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>実際問題は私は ユーザーに関わる機能みたいなものはaccountアプリに放り込んでしまって、若干ファットになりがちアプリも作ったりしています(自戒)</li>
+<li>ユーザー登録、ログイン、ユーザープロフィールの登録、更新 etc</li>
+</ul>
+</div>
+<div class="section" id="id29">
+<h2>アプリを複数作るのを躊躇しない<a class="headerlink" href="#id29" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>アプリにひとつの事にフォーカスさせるということは、必然的にアプリが複数生まれる</li>
+<li>なので小さなアプリを複数作っていく事に躊躇しない方が良いです。</li>
+<li>躊躇していると、一部のアプリが、ファットになりがちなので、迷ったらアプリを切る方が良い。</li>
+</ul>
+</div>
+<div class="section" id="id30">
+<h2>アプリを複数作るのを躊躇しない<a class="headerlink" href="#id30" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>Don't be Afraid Multiple Apps.<ul>
+<li>via <a class="reference external" href="https://www.youtube.com/watch?v=A-S0tqpPga4">DjangoCon 2008: Reusable Apps</a></li>
+</ul>
+</li>
+<li><strong>When in Doubt, Keep Apps Small</strong><ul>
+<li><strong>迷ったらアプリを小さくしよう</strong></li>
+<li>最初から完璧を目指さずに、必要になったらリライトしたり、アプリを分割すれば良い</li>
+<li>そのような場合も、大きなアプリになってるより小さいアプリになって方がやりやすい</li>
+<li>via 4 Fundamentals of Django App Design | Two Scoops of Django 3.x</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="id32">
+<h2>小さいアプリを複数作ればそれでいいのか？<a class="headerlink" href="#id32" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li><strong>いいえ</strong> せっかく複数のアプリに分割しても、それが密結合にならないしましょう。</li>
+<li>密結合や、相互依存の関係になると、修正や追加のコストが想定外に膨らむケースにぶち当たります。</li>
+<li>アプリ同士の関係を極力、 <strong>疎結合</strong> になるように保ちましょう。</li>
+<li>疎結合はDjangoの哲学においてとても重要な要素です。</li>
+</ul>
+</div>
+<div class="section" id="loose-copling">
+<h2>疎結合(Loose Copling)<a class="headerlink" href="#loose-copling" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<blockquote>
+<div><p>Djangoスタックの基本的な目標は、疎結合と高い凝集度を実現することです。フレームワークの各レイヤーは絶対に必要でない限り、相手をお互いに「知る」べきではありません。</p>
+<p>例えば、テンプレートシステムはWebリクエストについて何も知らず、データベース層はデータ表示について何も知らず、ビューシステムはプログラマがどのテンプレートシステムを使っているかを気にしません。</p>
+<p>Django は利便性のためにフルスタックとなってはいますが、スタックのどのコンポーネントも、可能な限り独立させてあります。</p>
+<p>via <a class="reference external" href="https://docs.djangoproject.com/ja/4.1/misc/design-philosophies/#loose-coupling">https://docs.djangoproject.com/ja/4.1/misc/design-philosophies/#loose-coupling</a></p>
+</div></blockquote>
+</div>
+<div class="section" id="id33">
+<h2>密結合の問題点<a class="headerlink" href="#id33" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>アプリ同士が無秩序に相互に依存していると様々な問題点がでてきます。<ul>
+<li>例えばPythonのコード上では <strong>循環参照エラー</strong> 出たり。</li>
+<li>アプリを変更したら、想定外のアプリまで修正しなければならなかったり</li>
+<li>アプリを削除したら、他のアプリが壊れたり...</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="id34">
+<h2>循環参照エラー<a class="headerlink" href="#id34" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<img alt="_images/circular_import_1.png" src="_images/circular_import_1.png" />
+<p>回避するために、メソッドの中でインポートしてしまう</p>
+<img alt="_images/circular_import_2.png" src="_images/circular_import_2.png" />
+</div>
+<div class="section" id="id35">
+<h2>アプリが相互依存していると壊れやすい<a class="headerlink" href="#id35" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<a class="reference internal image-reference" href="_images/circular_apps.png"><img alt="_images/circular_apps.png" src="_images/circular_apps.png" style="width: 60%;" /></a>
+<p>via <a class="reference external" href="https://seddonym.me/2018/05/04/django-signals/#project-dependency-flow">https://seddonym.me/2018/05/04/django-signals/#project-dependency-flow</a></p>
+</div>
+<div class="section" id="id36">
+<h2>アプリ間の依存関係を少なくするためにどうするべきか<a class="headerlink" href="#id36" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>依存を単方向に限定して、<strong>依存関係を整理する</strong></li>
+</ul>
+<a class="reference internal image-reference" href="_images/encapsulated_apps.png"><img alt="_images/encapsulated_apps.png" src="_images/encapsulated_apps.png" style="width: 60%;" /></a>
+<p>via <a class="reference external" href="https://seddonym.me/2018/05/04/django-signals/#project-dependency-flow">https://seddonym.me/2018/05/04/django-signals/#project-dependency-flow</a></p>
+</div>
+<div class="section" id="id37">
+<h2>チームで依存関係のフローを意識する<a class="headerlink" href="#id37" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>図に起こしたりして共有すると説明しやすい</li>
+</ul>
+<a class="reference internal image-reference" href="_images/real_dependecy_flow.png"><img alt="_images/real_dependecy_flow.png" src="_images/real_dependecy_flow.png" style="width: 80%;" /></a>
+</div>
+<div class="section" id="id38">
+<h2>相互に依存しないためにはどうすればいいか？<a class="headerlink" href="#id38" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>(やっと本題感)</li>
+<li>依存しても良いアプリを作る</li>
+<li>Djangoの仕組みを使う<ul>
+<li>シグナルを使う</li>
+<li>ミドルウェアを使う</li>
+</ul>
+</li>
+<li>アプリ構造とURL構造を一致させない</li>
+</ul>
+</div>
+<div class="section" id="id39">
+<h2>依存しても良いアプリに分ける<a class="headerlink" href="#id39" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<img alt="_images/sougo_depend_1.png" src="_images/sougo_depend_1.png" />
+</div>
+<div class="section" id="id40">
+<h2>依存しても良いアプリに分ける<a class="headerlink" href="#id40" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<img alt="_images/sougo_depend_2.png" src="_images/sougo_depend_2.png" />
+</div>
+<div class="section" id="id41">
+<h2>Djangoの仕組みを使う<a class="headerlink" href="#id41" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>シグナルを使って依存関係を単方向にする</li>
+<li>例えば監査ログようなアプリを考える</li>
+<li>監査ログとは？<ul>
+<li>ユーザーが操作したアクションと、その時の対象の状態を記録する</li>
+<li>AWS の CloudTrail とかをイメージするとわかりやすい</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="id42">
+<h2>他のアプリと相互依存してまうケース<a class="headerlink" href="#id42" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<img alt="_images/auditlog_model.png" src="_images/auditlog_model.png" />
+</div>
+<div class="section" id="id43">
+<h2>他のアプリと相互依存してまうケース<a class="headerlink" href="#id43" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>監査ログを保存する時は、<strong>auditlogアプリの関数</strong> をインポートして各アプリ側に実装を書く</li>
+</ul>
+<img alt="_images/auditlog_logger.png" src="_images/auditlog_logger.png" />
+</div>
+<div class="section" id="id44">
+<h2>他のアプリと相互依存してまうケース<a class="headerlink" href="#id44" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<a class="reference internal image-reference" href="_images/auditlog_graph_1.png"><img alt="_images/auditlog_graph_1.png" src="_images/auditlog_graph_1.png" style="width: 70%;" /></a>
+<p>(GenericForeignKeyを使うことを依存と表現するべきではないかもしれない)</p>
+</div>
+<div class="section" id="id45">
+<h2>シグナルを使い依存関係を単方向にする<a class="headerlink" href="#id45" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<img alt="_images/auditlog_signal.png" src="_images/auditlog_signal.png" />
+</div>
+<div class="section" id="id46">
+<h2>シグナルを使い依存関係を単方向にする<a class="headerlink" href="#id46" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<img alt="_images/auditlog_signal_graph.png" src="_images/auditlog_signal_graph.png" />
+</div>
+<div class="section" id="id47">
+<h2>ミドルウェアを使う<a class="headerlink" href="#id47" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>監査ログ取得をミドルウェアにして、他のアプリに依存させない</li>
+</ul>
+<a class="reference internal image-reference" href="_images/auditlog_middleware.png"><img alt="_images/auditlog_middleware.png" src="_images/auditlog_middleware.png" style="width: 70%;" /></a>
+</div>
+<div class="section" id="id48">
+<h2>ミドルウェアを使う<a class="headerlink" href="#id48" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<img alt="_images/auditlog_middleware_graph.png" src="_images/auditlog_middleware_graph.png" />
+</div>
+<div class="section" id="url">
+<h2>アプリとURL構造を一致させない<a class="headerlink" href="#url" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>特に restframwork のようなAPIサーバーを作る時にありがち。</li>
+<li>URL構造に引っ張られて、アプリに無駄な依存が発生してしまう。</li>
+<li>下記の例の場合、userアプリはどんどんコードが増え、依存が増えていく</li>
+</ul>
+<img alt="_images/url_depend_1.png" src="_images/url_depend_1.png" />
+</div>
+<div class="section" id="id49">
+<h2>アプリとURL構造を一致させない<a class="headerlink" href="#id49" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>そのリソースを持つアプリで実装する方が依存が少なくなる</li>
+</ul>
+<img alt="_images/url_depend_2.png" src="_images/url_depend_2.png" />
+</div>
+<div class="section" id="id50">
+<h2>それでも循環インポートはさける<a class="headerlink" href="#id50" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>何かしらの強い事情で、他のアプリのモデルが欲しい</li>
+<li>依存が増えてしまうが、それでもモデルが欲しい</li>
+<li><strong>Pythonコードでのimportはしない</strong></li>
+<li>Djangoの仕組みを利用する方が <strong>いくらかマシ</strong></li>
+</ul>
+</div>
+<div class="section" id="id51">
+<h2>Djangoの仕組みでモデルを取得する<a class="headerlink" href="#id51" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>頻繁に必要になるであろう、<strong>AUTH_USER</strong> のモデル get_user_modelで取れる</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>from django.contrib.auth import get_user_model
+User = get_user_model()
+</pre></div>
+</div>
+<p>それ以外のモデルも、django.apps.apps.get_model() 取得できる</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>from django.apps import apps
+Blog = apps.get_model(&quot;blog.Blog&quot;)
+</pre></div>
+</div>
+</div>
+<div class="section" id="id52">
+<h2>オープン・クローズドの原則<a class="headerlink" href="#id52" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>アプリを疎結合にし、依存関係を単方向に整理すると機能が追加しやすく、影響範囲も限定的になるので修正しやすくなります。</li>
+<li>これは <a class="reference external" href="https://ja.wikipedia.org/wiki/SOLID">SOLID</a> の オープン・クローズドの原則をDjangoアプリでやっているイメージです。</li>
+<li><strong>「拡張に対して開いて、修正に対して閉じている」</strong></li>
+</ul>
+</div>
+<div class="section" id="id53">
+<h2>オープン・クローズドの原則<a class="headerlink" href="#id53" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<a class="reference internal image-reference" href="_images/open_closed_apps.png"><img alt="_images/open_closed_apps.png" src="_images/open_closed_apps.png" style="width: 70%;" /></a>
+</div>
+<div class="section" id="id54">
+<h2>まとめ1<a class="headerlink" href="#id54" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>アプリは機能単位で作りましょう</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>アプリはひとつのタスクにフォーカスしましょう</li>
+<li>アプリ間が直交になるか考えてみましょう</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li>迷ったらアプリを小さく作りましょう</li>
+<li>アプリを疎結合にしましょう</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>循環インポートを避けましょう</li>
+<li>依存関係が単方向になるよう整理しましょう</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id55">
+<h2>まとめ2<a class="headerlink" href="#id55" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>疎結合を実現するためには</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>依存しても良いアプリを作りましょう</li>
+<li>DJangoの仕組みを使いましょう (シグナル、ミドルウェア, モデル取得)</li>
+<li>アプリとURL構造を一致しないようにしましょう</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li>オープンクローズドの原則が満たせるようなアプリ構成を目指しましょう</li>
+</ul>
+</div>
+<div class="section" id="q5-djangoweb">
+<h2>Q5. Djangoの開発で参考にしている書籍やWebサイトは？<a class="headerlink" href="#q5-djangoweb" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>akiyokoさんの本(書籍)<ul>
+<li>現場で使える Djangoシリーズ</li>
+</ul>
+</li>
+<li>Two Scoops of Django 3.x (書籍)</li>
+<li>実践Django(書籍)</li>
+<li>公式ドキュメント (サイト)</li>
+<li>Stack Overflow (サイト)</li>
+<li>くろのて (サイト)</li>
+<li>DRFの公式ドキュメント(サイト)</li>
+<li>過去のDjangoCongressの資料 (サイト)</li>
+<li>thinkAmiさんのブログ(サイト)</li>
+<li>Narito Blog(サイト)</li>
+</ul>
+</div>
+<div class="section" id="q6-django">
+<h2>Q6.  Djangoを最初に学び始めた時にどんなことに困った?<a class="headerlink" href="#q6-django" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>設定ファイルの分け方</li>
+<li>アプリの命名規則</li>
+<li>アプリを切る粒度</li>
+<li>フォームライブラリが移行時期で覚えるの大変</li>
+<li>フォームセット</li>
+<li>デプロイ方法</li>
+<li>静的ファイルの取り扱い</li>
+<li>テスト方法</li>
+<li>モデル設計</li>
+<li>ブラックボックスになってるのが不安</li>
+</ul>
+</div>
+<div class="section" id="id56">
+<h2>Q6.  Djangoを最初に学び始めた時にどんなことに困った?<a class="headerlink" href="#id56" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>ドキュメントに載ってない、ユーザー権限周り</li>
+<li>ビジネスロジックががっつりViewに書かれていた</li>
+<li>ORMの制約</li>
+<li>どっから初めていいのかわからない</li>
+<li>日本語の情報がすくない</li>
+<li>クラスベースビューと関数ベースビューの違い</li>
+<li>クラスベースビューのカスタマイズ方法</li>
+</ul>
+</div>
+<div class="section" id="id57">
+<h2>Q6.  Djangoを最初に学び始めた時にどんなことに困った?<a class="headerlink" href="#id57" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>情報が少ない</li>
+<li>ユーティリティの置き場所</li>
+<li>マイグレーションエラーの解消方法</li>
+<li>アプリとは？</li>
+<li>ディレクトリ構成</li>
+<li>モデルのマネージャーを知らずに苦労した</li>
+<li>DjangoのAdminが改造しにくい</li>
+</ul>
+</div>
+<div class="section" id="id58">
+<h2>参考<a class="headerlink" href="#id58" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li>Webページ や 書籍 の著者の皆さん 本当に ありがとうございます。m(_ _)m</li>
+<li><a class="reference external" href="https://docs.djangoproject.com/ja/4.1/intro/reusable-apps/">https://docs.djangoproject.com/ja/4.1/intro/reusable-apps/</a></li>
+<li><a class="reference external" href="https://django-best-practice-ja.readthedocs.io/ja/latest/deployment/bootstrap.html">https://django-best-practice-ja.readthedocs.io/ja/latest/deployment/bootstrap.html</a></li>
+<li><a class="reference external" href="https://webcache.googleusercontent.com/search?q=cache:rhIpalvIOCcJ:https://groups.google.com/g/django-ja/c/Lmk_z7vvpqs&amp;cd=1&amp;hl=ja&amp;ct=clnk&amp;gl=jp">https://webcache.googleusercontent.com/search?q=cache:rhIpalvIOCcJ:https://groups.google.com/g/django-ja/c/Lmk_z7vvpqs&amp;cd=1&amp;hl=ja&amp;ct=clnk&amp;gl=jp</a></li>
+<li><a class="reference external" href="https://akirachiku.com/post/2014-04-01-road-to-django-best-practice/">https://akirachiku.com/post/2014-04-01-road-to-django-best-practice/</a></li>
+<li><a class="reference external" href="https://shuji-w6e.hatenadiary.org/entry/20080731/1217477232">https://shuji-w6e.hatenadiary.org/entry/20080731/1217477232</a></li>
+</ul>
+</div>
+<div class="section" id="id59">
+<h2>参考<a class="headerlink" href="#id59" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="https://teratail.com/questions/217875">https://teratail.com/questions/217875</a></li>
+<li><a class="reference external" href="https://seddonym.me/2018/05/04/django-signals/#project-dependency-flow">https://seddonym.me/2018/05/04/django-signals/#project-dependency-flow</a></li>
+<li><a class="reference external" href="https://slides.com/davidseddon/deck/#/">https://slides.com/davidseddon/deck/#/</a></li>
+<li><a class="reference external" href="https://thara.dev/posts/rethink-django-project-structure/">https://thara.dev/posts/rethink-django-project-structure/</a></li>
+<li><a class="reference external" href="https://hiroronn.hatenablog.jp/entry/20181216/1544950291">https://hiroronn.hatenablog.jp/entry/20181216/1544950291</a></li>
+<li><a class="reference external" href="https://www.dabapps.com/blog/django-models-and-encapsulation/">https://www.dabapps.com/blog/django-models-and-encapsulation/</a></li>
+<li><a class="reference external" href="https://github.com/wsvincent/awesome-django#open-source-projects">https://github.com/wsvincent/awesome-django#open-source-projects</a></li>
+<li><a class="reference external" href="https://docs.google.com/presentation/d/1yapK1hYt8f64ztLCc7yFpCI4RG1vTMLhqwZ6cUBZIvI/edit#slide=id.g1db50041e3_0_145">https://docs.google.com/presentation/d/1yapK1hYt8f64ztLCc7yFpCI4RG1vTMLhqwZ6cUBZIvI/edit#slide=id.g1db50041e3_0_145</a></li>
+</ul>
+</div>
+<div class="section" id="id60">
+<h2>ご静聴ありがとうございました<a class="headerlink" href="#id60" title="このヘッドラインへのパーマリンク">¶</a></h2>
+</div>
+</div>
+
+
+  <div id="help">
+      Use the left and right arrow keys or click the left and right
+      edges of the page to navigate between slides.<br>
+      (Press 'H' or navigate to hide this message.)
+  </div>
+  </body>
+  <script type="text/javascript" src="_static/js/initialize.js"></script>
+  <script type="text/javascript" src="_static/js/slides.js"></script>
+</html>
